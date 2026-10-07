@@ -1,0 +1,9 @@
+[general]
+name=Pixel Energy
+description=Estimation of screen power consumption from displayed pixels
+version=0.1
+qgisMinimumVersion=3.22
+author=Laura Wenclik
+email=
+about=Tool for estimating screen power consumption from displayed map content.
+category=Analysis
