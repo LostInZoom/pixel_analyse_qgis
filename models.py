@@ -1,3 +1,5 @@
+
+
 SCREEN_MODELS = {
     "dong2012": {
 
@@ -22,26 +24,49 @@ SCREEN_MODELS = {
             "p_base_watts": 0.1,
             "p_max_watts": 2.0
         },
-
-        "unit": "watts",
+        "output": {
+            "type": "power",
+            "unit": "watts"
+        },
         "calibrated": False
     },
+    "hoarauHDR": {
+        "id": "hoarauHDR",
+        "name": "Hoarau (2011) - HDR",
+        "type": "indicator",
+        "method": "hoarau",
+        "source": {
+            "authors": "Charlotte Hoarau",
+            "year": 2011,
+            "title": "Reaching a Compromise between Contextual Constraints and Cartographic Rules: Application to Sustainable Maps"
+        },
+        "equation": "hoarau_hdr",
+        "output": {
+            "type": "indicator",
+            "unit": None,
+            "min": 0,
+            "max": 1
+        }
+    },
+    "hoarauOLED": {
+        "id": "hoarauOLED",
+        "name": "Hoarau (2011) - OLED",
+        "type": "indicator",
+        "method": "hoarau",
 
-    "anotherModel": {
-
-        "id": "anotherModel",
-        "name": "Autre modèle",
-        "type": "OLED",
-        "equation": "rgb_linear",
-        "coefficients": {
-            "red": 0.3,
-            "green": 0.5,
-            "blue": 0.2,
-            "p_base_watts": 0.1,
-            "p_max_watts": 2.0
+        "source": {
+            "authors": "Charlotte Hoarau",
+            "year": 2011,
+            "title": "Reaching a Compromise between Contextual Constraints and Cartographic Rules: Application to Sustainable Maps"
         },
 
-        "unit": "watts",
-        "calibrated": False
-    }
+        "equation": "hoarau_oled",
+
+        "output": {
+            "type": "indicator",
+            "unit": None,
+            "min": 0,
+            "max": 3
+        }
+        }
 }

@@ -1,3 +1,5 @@
+from unittest import result
+
 from qgis.PyQt.QtWidgets import (QDialog,QVBoxLayout,QLabel,QComboBox,QPushButton,QTextEdit)
 from .models import SCREEN_MODELS
 from qgis.gui import QgsMapToolEmitPoint
@@ -5,7 +7,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.gui import QgsMapTool, QgsRubberBand
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsPointXY,QgsGeometry,QgsWkbTypes)
-from qgis.PyQt.QtCore import Qt, QRect
+from qgis.PyQt.QtCore import Qt, QRect, QCoreApplication
 from .analysis import analyze_pixels
 class RectangleMapTool(QgsMapTool):
 
@@ -80,12 +82,12 @@ class PixelEnergyDialog(QDialog):
     def __init__(self, iface):
         super().__init__()
         self.iface = iface
-        self.setWindowTitle("Pixel Energy")
+        self.setWindowTitle(self.tr("Pixel Energy"))
         self.resize(400, 400)
         layout = QVBoxLayout()
 
         # Modèle
-        layout.addWidget(QLabel("Modèle d'écran :"))
+        layout.addWidget(QLabel(self.tr("Modèle d'écran :")))
 
         self.model_combo = QComboBox()
         for model_id, model in SCREEN_MODELS.items():
@@ -95,19 +97,19 @@ class PixelEnergyDialog(QDialog):
 
         # Sélection
 
-        self.select_button = QPushButton("Sélectionner une zone")
+        self.select_button = QPushButton(self.tr("Sélectionner une zone"))
 
         layout.addWidget(self.select_button)
         self.select_button.clicked.connect(self.start_selection)
 
-        self.canvas_button = QPushButton("Analyser tout le canvas")
+        self.canvas_button = QPushButton(self.tr("Analyser tout le canvas"))
 
         layout.addWidget(self.canvas_button)
 
         self.canvas_button.clicked.connect(self.analyze_full_canvas)
         # Résultats
 
-        layout.addWidget(QLabel("Résultats :"))
+        layout.addWidget(QLabel(self.tr("Résultats :")))
         self.results = QTextEdit()
         self.results.setReadOnly(True)
         
@@ -138,50 +140,57 @@ class PixelEnergyDialog(QDialog):
         text = ""
 
 
-        text += "===== ZONE SÉLECTIONNÉE =====\n\n"
+        text += self.tr("===== ZONE SÉLECTIONNÉE =====\n\n")
 
-        text += "Emprise géographique\n"
+        text += self.tr("Emprise géographique\n")
         text += f"  xmin : {xmin:.2f}\n"
         text += f"  xmax : {xmax:.2f}\n"
         text += f"  ymin : {ymin:.2f}\n"
         text += f"  ymax : {ymax:.2f}\n\n"
 
-        text += "Emprise écran\n"
+        text += self.tr("Emprise écran\n")
         text += f"  x : {x}\n"
         text += f"  y : {y}\n"
-        text += f"  largeur : {width} px\n"
-        text += f"  hauteur : {height} px\n\n"
+        text += f"  {self.tr('largeur')} : {width} px\n"
+        text += f"  {self.tr('hauteur')} : {height} px\n\n"
 
 
-        text += "===== RÉSULTATS =====\n\n"
+        text += self.tr("===== RÉSULTATS =====\n\n")
 
-        text += f"Nombre de pixels : {result['pixelCount']}\n\n"
+        text += f"{self.tr('Nombre de pixels')} : "
+        text += f"{result['pixelCount']}\n\n"
 
-        text += "RGB\n"
-        text += f"  Rouge   : {result['rgb']['red']['mean']:.2f} "
+        text += self.tr("RGB\n")
+        text += f"  {self.tr('Rouge')} :  {result['rgb']['red']['mean']:.2f} "
         text += f"(σ = {result['rgb']['red']['std']:.2f})\n"
 
-        text += f"  Vert    : {result['rgb']['green']['mean']:.2f} "
+        text += f"  {self.tr('Vert')}    : {result['rgb']['green']['mean']:.2f} "
         text += f"(σ = {result['rgb']['green']['std']:.2f})\n"
 
-        text += f"  Bleu    : {result['rgb']['blue']['mean']:.2f} "
+        text += f"  {self.tr('Bleu')}    : {result['rgb']['blue']['mean']:.2f} "
         text += f"(σ = {result['rgb']['blue']['std']:.2f})\n\n"
 
-        text += "Luminance\n"
-        text += f"  Moyenne : {result['luminance']['mean']:.2f}\n"
-        text += f"  Écart-type : {result['luminance']['std']:.2f}\n\n"
+        text += self.tr("Luminance\n")
+        text += f"  {self.tr('Moyenne')} : {result['luminance']['mean']:.2f}\n"
+        text += f"  {self.tr('Écart-type')} : {result['luminance']['std']:.2f}\n\n"
+        if result["energy"]["type"] == "power":
+            text += self.tr("Énergie\n")
+            text += f"  {self.tr('Puissance écran')} : "
+            text += f"{result['energy']['p_total_ecran']:.4f} W\n"
 
-        text += "Énergie\n"
-        text += f"  Puissance écran : "
-        text += f"{result['energy']['p_total_ecran']:.4f} W\n"
+            text += f"  {self.tr('Puissance / pixel')} : "
+            text += f"{result['energy']['p_pixel']:.6e}"
+            text += f" {result['energy']['unit']}\n"
 
-        text += f"  Puissance / pixel : "
-        text += f"{result['energy']['p_pixel']:.6e} W\n"
+            text += f"  {self.tr('Modèle')} : {result['energy']['model']}\n"
+        if result["energy"]["type"] == "indicator":
+            text += self.tr("Indicateur\n")
+            text += f"  {self.tr('Indicateur')} : "
+            text += f"{result['energy']['indicator']:.4f}\n"
 
-        text += f"  Ratio moyen : "
-        text += f"{result['energy']['mean_ratio']:.4f}\n\n"
-
-        text += f"Modèle : {result['energy']['model']}\n"
+            text += f"  {self.tr('Modèle')} : {result['energy']['model']}\n"
+            text += f"  {self.tr('Min')} : {result['energy']['min']}\n"
+            text += f"  {self.tr('Max')} : {result['energy']['max']}\n"
 
         self.results.setPlainText(text)
 

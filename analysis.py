@@ -1,5 +1,7 @@
 import math
 
+from sqlalchemy import null
+
 
 def pixel_power_index(r, g, b, model):
 
@@ -21,6 +23,10 @@ def pixel_power_index(r, g, b, model):
             + model["coefficients"]["green"] * g
             + model["coefficients"]["blue"] * b
         )
+    if model["equation"] == "hoarau_hdr":
+        return (math.max(r,g,b))
+    if model["equation"] == "hoarau_oled":
+        return r+g+b
 
     print(
         "Unknown model equation:",
@@ -85,15 +91,32 @@ def analyze_pixels(image, model):
     else :
         mean_ratio = 0
 
-    coefficients = model["coefficients"]
+    if model["output"]["type"] == "power":
+        coefficients = model["coefficients"]
 
-    p_total_screen = coefficients["p_base_watts"]+ mean_ratio* (coefficients["p_max_watts"]- coefficients["p_base_watts"])
-    
-    if pixel_count > 0:
-        p_pixel = p_total_screen / pixel_count
-    else:
-        p_pixel = 0
- 
+        p_total_screen = coefficients["p_base_watts"]+ mean_ratio* (coefficients["p_max_watts"]- coefficients["p_base_watts"])
+        
+        if pixel_count > 0:
+            p_pixel = p_total_screen / pixel_count
+        else:
+            p_pixel = 0
+        energyResult = {
+            "type": "power",
+            "p_total_ecran": p_total_screen,
+            "p_pixel": p_pixel,
+            "model": model["name"],
+            "unit": model["output"]["unit"]
+        }
+    if model["output"]["type"] == "indicator":
+        energyResult = {
+            "type": "indicator",
+            "indicator": mean_ratio,
+            "model": model["name"],
+            "unit": null,
+            "min": model["output"]["min"],
+            "max": model["output"]["max"]
+        };
+
     return {
         "pixelCount": pixel_count,
         "rgb": {
@@ -116,11 +139,5 @@ def analyze_pixels(image, model):
             "std": standard_deviation(L)
         },
 
-        "energy": {
-            "p_total_ecran": p_total_screen,
-            "p_pixel": p_pixel,
-            "mean_ratio": mean_ratio,
-            "model": model["name"],
-            "unit": model["unit"]
-        }
+        "energy": energyResult
     }
