@@ -1,39 +1,50 @@
 import math
 
-from sqlalchemy import null
+from .formula import evaluate_formula
 
+# def pixel_power_index(r, g, b, model):
+
+#     if model["equation"] == "rgb_gamma":
+#         gamma = model["gamma"]
+#         red = r ** gamma
+#         green = g ** gamma
+#         blue = b ** gamma
+#         return (
+#             model["coefficients"]["red"] * red
+#             + model["coefficients"]["green"] * green
+#             + model["coefficients"]["blue"] * blue
+#         )
+
+#     if model["equation"] == "rgb_linear":
+
+#         return (
+#             model["coefficients"]["red"] * r
+#             + model["coefficients"]["green"] * g
+#             + model["coefficients"]["blue"] * b
+#         )
+#     if model["equation"] == "hoarau_hdr":
+#         return (math.max(r,g,b))
+#     if model["equation"] == "hoarau_oled":
+#         return r+g+b
+
+#     print(
+#         "Unknown model equation:",
+#         model["equation"]
+#     )
+#     return 0
 
 def pixel_power_index(r, g, b, model):
+    formula = model["pixel_formula"]
 
-    if model["equation"] == "rgb_gamma":
-        gamma = model["gamma"]
-        red = r ** gamma
-        green = g ** gamma
-        blue = b ** gamma
-        return (
-            model["coefficients"]["red"] * red
-            + model["coefficients"]["green"] * green
-            + model["coefficients"]["blue"] * blue
-        )
-
-    if model["equation"] == "rgb_linear":
-
-        return (
-            model["coefficients"]["red"] * r
-            + model["coefficients"]["green"] * g
-            + model["coefficients"]["blue"] * b
-        )
-    if model["equation"] == "hoarau_hdr":
-        return (math.max(r,g,b))
-    if model["equation"] == "hoarau_oled":
-        return r+g+b
-
-    print(
-        "Unknown model equation:",
-        model["equation"]
+    return evaluate_formula(
+        formula["expression"],
+        variables={
+            "r": r,
+            "g": g,
+            "b": b
+        },
+        constants=formula.get("constants", {})
     )
-    return 0
-
 
 def average(values):
 
@@ -90,33 +101,64 @@ def analyze_pixels(image, model):
         mean_ratio = total_power_index / pixel_count
     else :
         mean_ratio = 0
+    output = model["output"]
+    output_formula = model.get("output_formula")
+    if output["type"] == "power":
+            
+        if output_formula is None:
+            raise ValueError("A power model requires an output formula.")
 
-    if model["output"]["type"] == "power":
-        coefficients = model["coefficients"]
-
-        p_total_screen = coefficients["p_base_watts"]+ mean_ratio* (coefficients["p_max_watts"]- coefficients["p_base_watts"])
-        
-        if pixel_count > 0:
-            p_pixel = p_total_screen / pixel_count
-        else:
-            p_pixel = 0
-        energyResult = {
+        total_power = evaluate_formula(
+            output_formula["expression"],
+            variables={
+                "index": mean_ratio,
+                "pixel_count": pixel_count,
+                "width": width,
+                "height": height
+            },
+            constants=output_formula.get("constants", {})
+        )
+        power_per_pixel = (
+            total_power / pixel_count
+            if pixel_count > 0
+            else 0
+        )
+        model_result = {
             "type": "power",
-            "p_total_ecran": p_total_screen,
-            "p_pixel": p_pixel,
+            "p_total_ecran": total_power,
+            "p_pixel": power_per_pixel,
+            "mean_ratio": mean_ratio,
             "model": model["name"],
-            "unit": model["output"]["unit"]
+            "unit": output.get("unit")
         }
-    if model["output"]["type"] == "indicator":
-        energyResult = {
-            "type": "indicator",
-            "indicator": mean_ratio,
-            "model": model["name"],
-            "unit": null,
-            "min": model["output"]["min"],
-            "max": model["output"]["max"]
-        };
 
+    elif output["type"] == "indicator":
+            if output_formula is not None:
+                indicator = evaluate_formula(
+                    output_formula["expression"],
+                    variables={
+                        "index": mean_ratio,
+                        "pixel_count": pixel_count,
+                        "width": width,
+                        "height": height
+                    },
+                    constants=output_formula.get("constants", {})
+                )
+            else:
+                indicator = mean_ratio
+    
+            model_result = {
+                "type": "indicator",
+                "indicator": indicator,
+                "model": model["name"],
+                "unit": output.get("unit"),
+                "min": output.get("min"),
+                "max": output.get("max")
+            }
+    
+    else:
+        raise ValueError(f"Unknown output type: {output['type']}")
+    
     return {
         "pixelCount": pixel_count,
         "rgb": {
@@ -139,5 +181,5 @@ def analyze_pixels(image, model):
             "std": standard_deviation(L)
         },
 
-        "energy": energyResult
+        "energy": model_result
     }

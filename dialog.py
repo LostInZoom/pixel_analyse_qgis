@@ -1,14 +1,29 @@
 from unittest import result
 
-from qgis.PyQt.QtWidgets import (QDialog,QVBoxLayout,QLabel,QComboBox,QPushButton,QTextEdit)
-from .models import SCREEN_MODELS
-from qgis.gui import QgsMapToolEmitPoint
-from qgis.PyQt.QtCore import Qt
-from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QComboBox,
+    QPushButton,
+    QTextEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+)
+from qgis.PyQt.QtCore import Qt, QRect
 from qgis.PyQt.QtGui import QColor
-from qgis.core import (QgsPointXY,QgsGeometry,QgsWkbTypes)
-from qgis.PyQt.QtCore import Qt, QRect, QCoreApplication
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.core import QgsPointXY, QgsGeometry, QgsWkbTypes
+
+from .models import SCREEN_MODELS
 from .analysis import analyze_pixels
+from .model_editor import ModelEditorDialog
+from .model_storage import load_custom_models, delete_custom_model
+
+
+
 class RectangleMapTool(QgsMapTool):
 
     def __init__(self, canvas, callback):
@@ -25,20 +40,18 @@ class RectangleMapTool(QgsMapTool):
         self.rubber_band.setWidth(2)
 
     def canvasPressEvent(self, event):
-
         if event.button() == Qt.LeftButton:
             self.start_screen = event.pos()
             self.start_point = self.toMapCoordinates(event.pos())
             self.rubber_band.reset(QgsWkbTypes.PolygonGeometry)
-    def canvasMoveEvent(self, event):
 
+    def canvasMoveEvent(self, event):
         if self.start_point is None:
             return
-
         self.end_point = self.toMapCoordinates(event.pos())
         self.update_rectangle()
-    def canvasReleaseEvent(self, event):
 
+    def canvasReleaseEvent(self, event):
         if event.button() != Qt.LeftButton:
             return
 
@@ -57,6 +70,7 @@ class RectangleMapTool(QgsMapTool):
         self.end_point = None
         
         self.callback(start, end,start_screen,end_screen)
+        
     def update_rectangle(self):
 
         x1 = self.start_point.x()
@@ -89,11 +103,27 @@ class PixelEnergyDialog(QDialog):
         # Modèle
         layout.addWidget(QLabel(self.tr("Modèle d'écran :")))
 
-        self.model_combo = QComboBox()
-        for model_id, model in SCREEN_MODELS.items():
-            self.model_combo.addItem(model["name"],model_id)
+        # self.model_combo = QComboBox()
+        # for model_id, model in SCREEN_MODELS.items():
+        #     self.model_combo.addItem(model["name"],model_id)
 
-        layout.addWidget(self.model_combo)
+        # layout.addWidget(self.model_combo)
+        
+        self.model_combo = QComboBox()
+
+        self.refresh_models()
+
+        model_layout = QHBoxLayout()
+        model_layout.addWidget(self.model_combo)
+
+        self.manage_models_button = QPushButton(
+            self.tr("Gérer les modèles…")
+        )
+        model_layout.addWidget(self.manage_models_button)
+
+        layout.addLayout(model_layout)
+
+        self.manage_models_button.clicked.connect(self.manage_models)
 
         # Sélection
 
@@ -214,7 +244,7 @@ class PixelEnergyDialog(QDialog):
         pixmap = canvas.grab(rect)
         image = pixmap.toImage()
         model_id = self.model_combo.currentData()
-        model = SCREEN_MODELS[model_id]
+        model = self.models[model_id]
         result = analyze_pixels(image, model)
         self.display_results(result,xmin,xmax,ymin,ymax,x,y,width,height) 
 
@@ -226,8 +256,7 @@ class PixelEnergyDialog(QDialog):
         # self.iface.mapCanvas().unsetMapTool(self.map_tool)
 
     def analyze_full_canvas(self):
-
-
+    
         canvas = self.iface.mapCanvas()
 
         width = canvas.width()
@@ -240,7 +269,7 @@ class PixelEnergyDialog(QDialog):
         image = pixmap.toImage()
 
         model_id = self.model_combo.currentData()
-        model = SCREEN_MODELS[model_id]
+        model = self.models[model_id]
 
 
         result = analyze_pixels(image,model)
@@ -255,3 +284,178 @@ class PixelEnergyDialog(QDialog):
 
 
         self.display_results(result,xmin,xmax,ymin,ymax,x,y,width,height) 
+
+    def refresh_models(self, selected_id=None):
+        previous_id = (
+            selected_id
+            if selected_id is not None
+            else self.model_combo.currentData()
+            if hasattr(self, "model_combo")
+            else None
+        )
+
+        models = dict(SCREEN_MODELS)
+
+        for model in load_custom_models():
+            models[model["id"]] = model
+
+        self.models = models
+        self.model_combo.clear()
+
+        for model_id, model in models.items():
+            self.model_combo.addItem(model["name"], model_id)
+
+        index = self.model_combo.findData(previous_id)
+
+        if index >= 0:
+            self.model_combo.setCurrentIndex(index)
+
+
+    def manage_models(self):
+        selected_id = self.model_combo.currentData()
+
+        dialog = ModelManagerDialog(self)
+        dialog.exec_()
+
+        self.refresh_models(selected_id)   
+
+class ModelManagerDialog(QDialog):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("Gestion des modèles"))
+        self.resize(420, 350)
+
+        layout = QVBoxLayout(self)
+
+        layout.addWidget(QLabel(self.tr("Modèles disponibles :")))
+
+        self.model_list = QListWidget()
+        layout.addWidget(self.model_list)
+
+        buttons = QHBoxLayout()
+
+        self.create_button = QPushButton(self.tr("Créer"))
+        self.edit_button = QPushButton(self.tr("Modifier"))
+        self.delete_button = QPushButton(self.tr("Supprimer"))
+
+        buttons.addWidget(self.create_button)
+        buttons.addWidget(self.edit_button)
+        buttons.addWidget(self.delete_button)
+
+        layout.addLayout(buttons)
+
+        self.close_button = QPushButton(self.tr("Fermer"))
+        layout.addWidget(self.close_button)
+
+        self.create_button.clicked.connect(self.create_model)
+        self.edit_button.clicked.connect(self.edit_model)
+        self.delete_button.clicked.connect(self.delete_model)
+        self.close_button.clicked.connect(self.accept)
+
+        self.model_list.currentItemChanged.connect(self.update_buttons)
+        self.model_list.itemDoubleClicked.connect(self.edit_model)
+
+        self.refresh_list()
+
+    def get_models(self):
+        models = dict(SCREEN_MODELS)
+
+        for model in load_custom_models():
+            models[model["id"]] = model
+
+        return models
+
+    def refresh_list(self, selected_id=None):
+        self.model_list.clear()
+        models = self.get_models()
+
+        for model_id, model in models.items():
+            if model.get("built_in", True):
+                label = f"{model['name']} (intégré)"
+            else:
+                label = f"{model['name']} (personnalisé)"
+
+            item = QListWidgetItem(label)
+            item.setData(Qt.UserRole, model_id)
+            self.model_list.addItem(item)
+
+            if model_id == selected_id:
+                self.model_list.setCurrentItem(item)
+
+        if self.model_list.currentItem() is None and self.model_list.count():
+            self.model_list.setCurrentRow(0)
+
+        self.update_buttons()
+
+    def update_buttons(self, *args):
+        item = self.model_list.currentItem()
+
+        if item is None:
+            is_custom = False
+        else:
+            model_id = item.data(Qt.UserRole)
+            model = self.get_models().get(model_id, {})
+            is_custom = not model.get("built_in", True)
+
+        self.edit_button.setEnabled(is_custom)
+        self.delete_button.setEnabled(is_custom)
+
+    def create_model(self):
+        editor = ModelEditorDialog(parent=self)
+
+        if editor.exec_() == QDialog.Accepted:
+            self.refresh_list(editor.model["id"])
+
+    def edit_model(self, *args):
+        item = self.model_list.currentItem()
+
+        if item is None:
+            return
+
+        model_id = item.data(Qt.UserRole)
+        model = self.get_models().get(model_id)
+
+        if model is None or model.get("built_in", True):
+            return
+
+        editor = ModelEditorDialog(parent=self, model=model)
+
+        if editor.exec_() == QDialog.Accepted:
+            self.refresh_list(model_id)
+
+    def delete_model(self):
+        item = self.model_list.currentItem()
+
+        if item is None:
+            return
+
+        model_id = item.data(Qt.UserRole)
+        model = self.get_models().get(model_id)
+
+        if model is None or model.get("built_in", True):
+            return
+
+        answer = QMessageBox.question(
+            self,
+            self.tr("Supprimer le modèle"),
+            self.tr("Supprimer le modèle « {} » ?").format(model["name"]),
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+
+        if answer != QMessageBox.Yes:
+            return
+
+        try:
+            delete_custom_model(model_id)
+        except (ValueError, OSError) as error:
+            QMessageBox.warning(
+                self,
+                self.tr("Erreur"),
+                str(error),
+            )
+            return
+
+        self.refresh_list()
+
