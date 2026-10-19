@@ -6,11 +6,14 @@ from qgis.PyQt.QtWidgets import (QDialog,QVBoxLayout,QFormLayout,QHBoxLayout,QLa
     QMessageBox,QHeaderView,
 )
 
-from .formula import evaluate_formula, FormulaError
+from qgis.gui import QgsExpressionBuilderDialog
+from qgis.core import QgsExpression,QgsExpressionContext, QgsExpressionContextScope
+from qgis.PyQt.QtWidgets import QLayout
+from .formula import FormulaError
 from .model_storage import save_custom_model
-
-
+from qgis.PyQt.QtWidgets import QToolButton
 class ModelEditorDialog(QDialog):
+
     def __init__(self, parent=None, model=None):
         super().__init__(parent)
 
@@ -18,14 +21,19 @@ class ModelEditorDialog(QDialog):
         self.model_id = self.model.get("id","custom_" + uuid.uuid4().hex)
 
         self.setWindowTitle(self.tr("Custom screen model"))
-        self.resize(650, 650)
+        self.resize(650, 450)
 
         self.build_ui()
         self.load_model()
 
     def build_ui(self):
         layout = QVBoxLayout(self)
+        layout.setSpacing(4)
+        layout.setSizeConstraint(QLayout.SetMinimumSize)
+
         form = QFormLayout()
+        form.setVerticalSpacing(6)
+        form.setHorizontalSpacing(10)
 
         self.name_edit = QLineEdit()
         form.addRow(self.tr("Model name:"), self.name_edit)
@@ -59,81 +67,42 @@ class ModelEditorDialog(QDialog):
 
         layout.addLayout(form)
 
-
-
-        # layout.addWidget(QLabel(self.tr("Pixel formula:")))
-
-        # self.pixel_formula_edit = QLineEdit()
-        # self.pixel_formula_edit.setPlaceholderText("0.3 * r^2 + 0.25 * g^2 + 0.45 * b^2")
-        # layout.addWidget(self.pixel_formula_edit)
-
-        # layout.addWidget(QLabel(self.tr("Insert an allowed element:")))
-        # layout.addLayout(
-        #     self.create_token_buttons(
-        #         self.pixel_formula_edit,
-        #         ["r", "g", "b", "+", "-", "*", "/", "^",
-        #          "(", ")", "min(", "max("]
-        #     )
-        # )
-
-        # layout.addWidget(QLabel(self.tr("Pixel formula constants:")))
-        # self.pixel_constants_table = self.create_constants_table()
-        # layout.addWidget(self.pixel_constants_table)
-        # layout.addLayout(self.create_constant_buttons(self.pixel_constants_table))
-
-
-
-        pixel_group = QVBoxLayout()
-
-        pixel_group.addWidget(QLabel(self.tr("Pixel formula:")))
+        self.add_info_label(
+                layout,
+                "Pixel formula:",
+                "Applied to every pixel. Use @r, @g and @b for normalized "
+                "red, green and blue values between 0 and 1."
+            )
 
         self.pixel_formula_edit = QLineEdit()
-        self.pixel_formula_edit.setPlaceholderText("a_r * r^gamma + a_g * g^gamma + a_b * b^gamma")
-        pixel_group.addWidget(self.pixel_formula_edit)
+        self.pixel_formula_edit.setPlaceholderText("0.3 * @r ^ 2.2 + 0.25 * @g ^ 2.2 + 0.45 * @b ^ 2.2")
 
-        pixel_group.addWidget(QLabel(self.tr("Insert an allowed element:")))
-        pixel_group.addLayout(
-            self.create_token_buttons(
-                self.pixel_formula_edit,
-                [
-                    "r", "g", "b", "+", "-", "*", "/", "^",
-                    "(", ")", "min(", "max("
-                ]
-            )
+        pixel_row = QHBoxLayout()
+        pixel_row.addWidget(self.pixel_formula_edit, 1)
+
+        builder_button = QPushButton(self.tr("Build expression..."))
+        builder_button.clicked.connect(self.open_pixel_expression_builder)
+        pixel_row.addWidget(builder_button)
+        layout.addLayout(pixel_row)
+
+        self.add_info_label(
+            layout,
+            "Output formula (optional):",
+            "Calculates the final output from @pixel_value, @pixel_count, "
+            "@width and @height. For power models, it calculates total power."
         )
-
-        pixel_group.addWidget(QLabel(self.tr("Constants used in this formula:")))
-
-        self.pixel_constants_table = self.create_constants_table()
-        self.pixel_constants_table.setMaximumHeight(130)
-        pixel_group.addWidget(self.pixel_constants_table)
-
-        pixel_group.addLayout(self.create_constant_buttons(self.pixel_constants_table))
-        layout.addLayout(pixel_group)
-
-
-
-        layout.addWidget(QLabel(self.tr("Optional output formula:")))
 
         self.output_formula_edit = QLineEdit()
-        self.output_formula_edit.setPlaceholderText("P_base + index * (P_max - P_base)")
-        layout.addWidget(self.output_formula_edit)
+        self.output_formula_edit.setPlaceholderText("0.1 + @pixel_value * (2.0 - 0.1)")
 
+        output_row = QHBoxLayout()
+        output_row.addWidget(self.output_formula_edit, 1)
 
-        layout.addWidget(QLabel(self.tr("Output variables: index, pixel_count, width, height")))
-        layout.addLayout(
-            self.create_token_buttons(
-                self.output_formula_edit,
-                ["index", "pixel_count", "width", "height",
-                 "+", "-", "*", "/", "^", "(", ")",
-                 "min(", "max("]
-            )
-        )
+        output_builder_button = QPushButton(self.tr("Build expression..."))
+        output_builder_button.clicked.connect(self.open_output_expression_builder)
+        output_row.addWidget(output_builder_button)
 
-        layout.addWidget(QLabel(self.tr("Output formula constants:")))
-        self.output_constants_table = self.create_constants_table()
-        layout.addWidget(self.output_constants_table)
-        layout.addLayout(self.create_constant_buttons(self.output_constants_table))
+        layout.addLayout(output_row)
 
         buttons_layout = QHBoxLayout()
 
@@ -150,6 +119,76 @@ class ModelEditorDialog(QDialog):
         buttons_layout.addWidget(self.cancel_button)
 
         layout.addLayout(buttons_layout)
+
+        self.update_output_controls()
+       
+
+    def open_pixel_expression_builder(self):
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope("Pixel Energy")
+
+        # Valeurs de test pour la prévisualisation de l'expression
+        scope.setVariable("r", 0.5, True)
+        scope.setVariable("g", 0.5, True)
+        scope.setVariable("b", 0.5, True)
+
+        context.appendScope(scope)
+
+        dialog = QgsExpressionBuilderDialog(
+            None,
+            self.pixel_formula_edit.text(),
+            self,
+            "PixelEnergyPixelFormula",
+            context
+        )
+        dialog.setWindowTitle(self.tr("Pixel formula builder"))
+
+        if dialog.exec_():
+            self.pixel_formula_edit.setText(dialog.expressionText())
+
+
+    def open_output_expression_builder(self):
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope("Pixel Energy")
+
+        # Valeurs d'exemple pour la prévisualisation
+        scope.setVariable("pixel_value", 0.5, True)
+        scope.setVariable("pixel_count", 100, True)
+        scope.setVariable("width", 10, True)
+        scope.setVariable("height", 10, True)
+
+        context.appendScope(scope)
+
+        dialog = QgsExpressionBuilderDialog(
+            None,
+            self.output_formula_edit.text(),
+            self,
+            "PixelEnergyOutputFormula",
+            context
+        )
+        dialog.setWindowTitle(self.tr("Output formula builder"))
+
+        if dialog.exec_():
+            self.output_formula_edit.setText(dialog.expressionText())
+
+    def add_info_label(self, layout, label_text, tooltip_text):
+        row = QHBoxLayout()
+
+        label = QLabel(self.tr(label_text))
+
+        info_button = QToolButton()
+        info_button.setText("ⓘ")
+        info_button.setAutoRaise(True)
+        info_button.setToolTip(self.tr(tooltip_text))
+        info_button.setAccessibleName(
+            self.tr("Information: ") + self.tr(label_text)
+        )
+
+        row.addWidget(label)
+        row.addWidget(info_button)
+        row.addStretch()
+
+        layout.addLayout(row)
 
     def create_token_buttons(self, line_edit, tokens):
         layout = QHBoxLayout()
@@ -169,18 +208,41 @@ class ModelEditorDialog(QDialog):
         table = QTableWidget(0, 2)
         table.setHorizontalHeaderLabels([self.tr("Name"),self.tr("Value")])
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setToolTip(
+            self.tr(
+                "Define the constants used in the formula.\n"
+                "Name: variable name used in the formula "
+                "(for example, gamma or a_r).\n"
+                "Value: numerical value assigned to this constant.\n"
+                "The name must match the one used in the formula."
+            )
+        )
+        table.horizontalHeaderItem(0).setToolTip(self.tr("Name of the constant, as written in the formula."))
+        table.horizontalHeaderItem(1).setToolTip(self.tr("Numerical value assigned to the constant."))
         return table
 
     def create_constant_buttons(self, table):
         layout = QHBoxLayout()
 
         add_button = QPushButton(self.tr("Add a constant"))
+        add_button.setToolTip(
+            self.tr(
+                "Add a row to define a new constant for this formula. "
+                "Use its name in the formula and enter its numerical value."
+            )
+        )
         add_button.clicked.connect(
             lambda checked=False, target=table:
             self.add_constant_row(target)
         )
 
         remove_button = QPushButton(self.tr("Remove selected constant"))
+        remove_button.setToolTip(
+            self.tr(
+                "Remove the selected constant from this formula. "
+                "Check that the formula does not use this constant anymore."
+            )
+        )
         remove_button.clicked.connect(
             lambda checked=False, target=table:
             self.remove_constant_row(target)
@@ -271,11 +333,11 @@ class ModelEditorDialog(QDialog):
         self.pixel_formula_edit.setText(
             pixel_formula.get("expression", "")
         )
-        self.load_constants(self.pixel_constants_table,pixel_formula.get("constants", {}))
+        # self.load_constants(self.pixel_constants_table,pixel_formula.get("constants", {}))
 
         output_formula = self.model.get("output_formula") or {}
         self.output_formula_edit.setText(output_formula.get("expression", ""))
-        self.load_constants(self.output_constants_table,output_formula.get("constants", {}))
+        # self.load_constants(self.output_constants_table,output_formula.get("constants", {}))
 
         self.update_output_controls()
 
@@ -285,47 +347,80 @@ class ModelEditorDialog(QDialog):
         self.indicator_max.setEnabled(is_indicator)
         self.unit_edit.setEnabled(True)
 
-    def validate_formulas(self):
-        pixel_constants = self.read_constants(self.pixel_constants_table)
-        output_constants = self.read_constants(self.output_constants_table)
+    
+    def evaluate_pixel_expression(self, expression_text, constants):
+        expression = QgsExpression(expression_text)
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope("Pixel Energy")
 
-        evaluate_formula(
-            self.pixel_formula_edit.text(),
-            variables={"r": 0.2, "g": 0.4, "b": 0.6},
-            constants=pixel_constants
-        )
+        scope.setVariable("r", 0.2)
+        scope.setVariable("g", 0.4)
+        scope.setVariable("b", 0.6)
+
+        for name, value in constants.items():
+            scope.setVariable(name, value)
+
+        context.appendScope(scope)
+
+        if not expression.prepare(context):
+            raise ValueError(expression.parserErrorString())
+
+        result = expression.evaluate(context)
+
+        if expression.hasEvalError():
+            raise ValueError(expression.evalErrorString())
+
+        return result
+
+
+    def evaluate_output_expression(self, expression_text, constants, pixel_value=0.5):
+        expression = QgsExpression(expression_text)
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope("Pixel Energy")
+
+        scope.setVariable("pixel_value", pixel_value)
+        scope.setVariable("pixel_count", 100)
+        scope.setVariable("width", 10)
+        scope.setVariable("height", 10)
+
+        for name, value in constants.items():
+            scope.setVariable(name, value)
+
+        context.appendScope(scope)
+
+        if not expression.prepare(context):
+            raise ValueError(expression.parserErrorString())
+
+        result = expression.evaluate(context)
+
+        if expression.hasEvalError():
+            raise ValueError(expression.evalErrorString())
+
+        return result
+
+
+
+    def validate_formulas(self):
+        self.evaluate_pixel_expression(self.pixel_formula_edit.text(),{})
 
         output_expression = self.output_formula_edit.text().strip()
         output_type = self.output_type_combo.currentData()
 
         if output_expression:
-            evaluate_formula(
-                output_expression,
-                variables={
-                    "index": 0.5,
-                    "pixel_count": 100,
-                    "width": 10,
-                    "height": 10
-                },
-                constants=output_constants
-            )
+            self.evaluate_output_expression(output_expression,{})
 
         if output_type == "power" and not output_expression:
             raise ValueError(self.tr("A power model requires an output formula."))
 
-        if (output_type == "indicator" and self.indicator_max.value() < self.indicator_min.value()):
+        if (output_type == "indicator"and self.indicator_max.value() < self.indicator_min.value()):
             raise ValueError(self.tr("The indicator maximum must be at least its minimum."))
-        return pixel_constants, output_constants
+
+        return {}, {}
+
 
     def test_formulas(self):
         try:
-            pixel_constants, output_constants = self.validate_formulas()
-
-            pixel_value = evaluate_formula(
-                self.pixel_formula_edit.text(),
-                variables={"r": 0.2, "g": 0.4, "b": 0.6},
-                constants=pixel_constants
-            )
+            pixel_value = self.evaluate_pixel_expression(self.pixel_formula_edit.text(),{})
 
             message = (
                 self.tr("Pixel formula is valid.\n")
@@ -336,39 +431,27 @@ class ModelEditorDialog(QDialog):
             output_expression = self.output_formula_edit.text().strip()
 
             if output_expression:
-                output_value = evaluate_formula(
-                    output_expression,
-                    variables={
-                        "index": pixel_value,
-                        "pixel_count": 100,
-                        "width": 10,
-                        "height": 10
-                    },
-                    constants=output_constants
-                )
-
+                output_value = self.evaluate_output_expression(output_expression,{},pixel_value=pixel_value)
                 message += (
                     "\n"
                     + self.tr("Example output: ")
                     + str(output_value)
                 )
 
-            QMessageBox.information(
-                self,
-                self.tr("Formula test"),
-                message
-            )
+            output_type = self.output_type_combo.currentData()
+
+            if output_type == "power" and not output_expression:
+                raise ValueError(self.tr("A power model requires an output formula."))
+
+            QMessageBox.information(self,self.tr("Formula test"),message)
 
         except (FormulaError, ValueError, ArithmeticError) as error:
-            QMessageBox.warning(
-                self,
-                self.tr("Invalid formula"),
-                str(error)
-            )
+            QMessageBox.warning(self,self.tr("Invalid formula"),str(error))
+
 
     def save_model(self):
         try:
-            pixel_constants, output_constants = self.validate_formulas()
+            self.validate_formulas()
 
             output_type = self.output_type_combo.currentData()
             output_formula_expression = (
@@ -389,7 +472,7 @@ class ModelEditorDialog(QDialog):
             if output_formula_expression:
                 output_formula = {
                     "expression": output_formula_expression,
-                    "constants": output_constants
+                    "constants": {}
                 }
 
             model = {
@@ -406,7 +489,7 @@ class ModelEditorDialog(QDialog):
                 },
                 "pixel_formula": {
                     "expression": self.pixel_formula_edit.text().strip(),
-                    "constants": pixel_constants
+                    "constants": {}
                 },
                 "output": output,
                 "output_formula": output_formula,

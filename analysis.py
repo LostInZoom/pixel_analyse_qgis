@@ -1,50 +1,34 @@
 import math
+from qgis.core import QgsExpression, QgsExpressionContext, QgsExpressionContextScope
+# from .formula import evaluate_output_expression
 
-from .formula import evaluate_formula
-
-# def pixel_power_index(r, g, b, model):
-
-#     if model["equation"] == "rgb_gamma":
-#         gamma = model["gamma"]
-#         red = r ** gamma
-#         green = g ** gamma
-#         blue = b ** gamma
-#         return (
-#             model["coefficients"]["red"] * red
-#             + model["coefficients"]["green"] * green
-#             + model["coefficients"]["blue"] * blue
-#         )
-
-#     if model["equation"] == "rgb_linear":
-
-#         return (
-#             model["coefficients"]["red"] * r
-#             + model["coefficients"]["green"] * g
-#             + model["coefficients"]["blue"] * b
-#         )
-#     if model["equation"] == "hoarau_hdr":
-#         return (math.max(r,g,b))
-#     if model["equation"] == "hoarau_oled":
-#         return r+g+b
-
-#     print(
-#         "Unknown model equation:",
-#         model["equation"]
-#     )
-#     return 0
 
 def pixel_power_index(r, g, b, model):
     formula = model["pixel_formula"]
 
-    return evaluate_formula(
-        formula["expression"],
-        variables={
-            "r": r,
-            "g": g,
-            "b": b
-        },
-        constants=formula.get("constants", {})
-    )
+    expression = QgsExpression(formula["expression"])
+    context = QgsExpressionContext()
+    scope = QgsExpressionContextScope("Pixel Energy")
+
+    scope.setVariable("r", r)
+    scope.setVariable("g", g)
+    scope.setVariable("b", b)
+
+    for name, value in formula.get("constants", {}).items():
+        scope.setVariable(name, value)
+
+    context.appendScope(scope)
+    expression.setEvalErrorString("")
+
+    if not expression.prepare(context):
+        raise ValueError(f"Invalid pixel formula: {expression.parserErrorString()}")
+
+    result = expression.evaluate(context)
+
+    if expression.hasEvalError():
+        raise ValueError(f"Error evaluating pixel formula: {expression.evalErrorString()}")
+
+    return result
 
 def average(values):
 
@@ -63,6 +47,7 @@ def standard_deviation(values):
 
 
 def analyze_pixels(image, model):
+
 
     width = image.width()
     height = image.height()
@@ -108,10 +93,10 @@ def analyze_pixels(image, model):
         if output_formula is None:
             raise ValueError("A power model requires an output formula.")
 
-        total_power = evaluate_formula(
+        total_power = evaluate_output_expression(
             output_formula["expression"],
             variables={
-                "index": mean_ratio,
+                "pixel_value": mean_ratio,
                 "pixel_count": pixel_count,
                 "width": width,
                 "height": height
@@ -134,10 +119,10 @@ def analyze_pixels(image, model):
 
     elif output["type"] == "indicator":
             if output_formula is not None:
-                indicator = evaluate_formula(
+                indicator = evaluate_output_expression(
                     output_formula["expression"],
                     variables={
-                        "index": mean_ratio,
+                        "pixel_value": mean_ratio,
                         "pixel_count": pixel_count,
                         "width": width,
                         "height": height
@@ -183,3 +168,27 @@ def analyze_pixels(image, model):
 
         "energy": model_result
     }
+
+
+def evaluate_output_expression(expression_text, variables, constants=None):
+    expression = QgsExpression(expression_text)
+    context = QgsExpressionContext()
+    scope = QgsExpressionContextScope("Pixel Energy")
+
+    for name, value in variables.items():
+        scope.setVariable(name, value)
+
+    for name, value in (constants or {}).items():
+        scope.setVariable(name, value)
+
+    context.appendScope(scope)
+
+    if not expression.prepare(context):
+        raise ValueError(expression.parserErrorString())
+
+    result = expression.evaluate(context)
+
+    if expression.hasEvalError():
+        raise ValueError(expression.evalErrorString())
+
+    return result

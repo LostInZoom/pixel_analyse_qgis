@@ -30,7 +30,7 @@ SCREEN_MODELS = {
             "unit": "W"
         },
         "output_formula": {
-            "expression": "P_base + index * (P_max - P_base)",
+            "expression": "P_base + pixel_value * (P_max - P_base)",
             "constants": {
                 "P_base": 0.1,
                 "P_max": 2.0
