@@ -101,7 +101,7 @@ class PixelEnergyDialog(QDialog):
         layout = QVBoxLayout()
 
         # Modèle
-        layout.addWidget(QLabel(self.tr("Modèle d'écran :")))
+        layout.addWidget(QLabel(self.tr("Screen model:")))
 
         # self.model_combo = QComboBox()
         # for model_id, model in SCREEN_MODELS.items():
@@ -117,7 +117,7 @@ class PixelEnergyDialog(QDialog):
         model_layout.addWidget(self.model_combo)
 
         self.manage_models_button = QPushButton(
-            self.tr("Gérer les modèles…")
+            self.tr("• Manage models…")
         )
         model_layout.addWidget(self.manage_models_button)
 
@@ -127,19 +127,19 @@ class PixelEnergyDialog(QDialog):
 
         # Sélection
 
-        self.select_button = QPushButton(self.tr("Sélectionner une zone"))
+        self.select_button = QPushButton(self.tr("Select a area"))
 
         layout.addWidget(self.select_button)
         self.select_button.clicked.connect(self.start_selection)
 
-        self.canvas_button = QPushButton(self.tr("Analyser tout le canvas"))
+        self.canvas_button = QPushButton(self.tr("Analyze entire canvas"))
 
         layout.addWidget(self.canvas_button)
 
         self.canvas_button.clicked.connect(self.analyze_full_canvas)
         # Résultats
 
-        layout.addWidget(QLabel(self.tr("Résultats :")))
+        layout.addWidget(QLabel(self.tr("Results :")))
         self.results = QTextEdit()
         self.results.setReadOnly(True)
         
@@ -170,55 +170,55 @@ class PixelEnergyDialog(QDialog):
         text = ""
 
 
-        text += self.tr("===== ZONE SÉLECTIONNÉE =====\n\n")
+        text += self.tr("===== SELECTED AREA =====\n\n")
 
-        text += self.tr("Emprise géographique\n")
+        text += self.tr("Geographic extent\n")
         text += f"  xmin : {xmin:.2f}\n"
         text += f"  xmax : {xmax:.2f}\n"
         text += f"  ymin : {ymin:.2f}\n"
         text += f"  ymax : {ymax:.2f}\n\n"
 
-        text += self.tr("Emprise écran\n")
+        text += self.tr("Screen extent\n")
         text += f"  x : {x}\n"
         text += f"  y : {y}\n"
-        text += f"  {self.tr('largeur')} : {width} px\n"
-        text += f"  {self.tr('hauteur')} : {height} px\n\n"
+        text += f"  {self.tr('width')} : {width} px\n"
+        text += f"  {self.tr('height')} : {height} px\n\n"
 
 
-        text += self.tr("===== RÉSULTATS =====\n\n")
+        text += self.tr("===== RESULTS =====\n\n")
 
-        text += f"{self.tr('Nombre de pixels')} : "
+        text += f"{self.tr('Number of pixels')} : "
         text += f"{result['pixelCount']}\n\n"
 
         text += self.tr("RGB\n")
-        text += f"  {self.tr('Rouge')} :  {result['rgb']['red']['mean']:.2f} "
+        text += f"  {self.tr('Red')} :  {result['rgb']['red']['mean']:.2f} "
         text += f"(σ = {result['rgb']['red']['std']:.2f})\n"
 
-        text += f"  {self.tr('Vert')}    : {result['rgb']['green']['mean']:.2f} "
+        text += f"  {self.tr('Green')}    : {result['rgb']['green']['mean']:.2f} "
         text += f"(σ = {result['rgb']['green']['std']:.2f})\n"
 
-        text += f"  {self.tr('Bleu')}    : {result['rgb']['blue']['mean']:.2f} "
+        text += f"  {self.tr('Blue')}    : {result['rgb']['blue']['mean']:.2f} "
         text += f"(σ = {result['rgb']['blue']['std']:.2f})\n\n"
 
         text += self.tr("Luminance\n")
-        text += f"  {self.tr('Moyenne')} : {result['luminance']['mean']:.2f}\n"
-        text += f"  {self.tr('Écart-type')} : {result['luminance']['std']:.2f}\n\n"
+        text += f"  {self.tr('Mean')} : {result['luminance']['mean']:.2f}\n"
+        text += f"  {self.tr('Standard deviation')} : {result['luminance']['std']:.2f}\n\n"
         if result["energy"]["type"] == "power":
-            text += self.tr("Énergie\n")
-            text += f"  {self.tr('Puissance écran')} : "
+            text += self.tr("Energy\n")
+            text += f"  {self.tr('Screen power')} : "
             text += f"{result['energy']['p_total_ecran']:.4f} W\n"
 
-            text += f"  {self.tr('Puissance / pixel')} : "
+            text += f"  {self.tr('Power / pixel')} : "
             text += f"{result['energy']['p_pixel']:.6e}"
             text += f" {result['energy']['unit']}\n"
 
-            text += f"  {self.tr('Modèle')} : {result['energy']['model']}\n"
+            text += f"  {self.tr('Model')} : {result['energy']['model']}\n"
         if result["energy"]["type"] == "indicator":
-            text += self.tr("Indicateur\n")
-            text += f"  {self.tr('Indicateur')} : "
+            text += self.tr("Indicator\n")
+            text += f"  {self.tr('Indicator')} : "
             text += f"{result['energy']['indicator']:.4f}\n"
 
-            text += f"  {self.tr('Modèle')} : {result['energy']['model']}\n"
+            text += f"  {self.tr('Model')} : {result['energy']['model']}\n"
             text += f"  {self.tr('Min')} : {result['energy']['min']}\n"
             text += f"  {self.tr('Max')} : {result['energy']['max']}\n"
 
@@ -323,21 +323,21 @@ class ModelManagerDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Gestion des modèles"))
+        self.setWindowTitle(self.tr("Model management"))
         self.resize(420, 350)
 
         layout = QVBoxLayout(self)
 
-        layout.addWidget(QLabel(self.tr("Modèles disponibles :")))
+        layout.addWidget(QLabel(self.tr("Available models :")))
 
         self.model_list = QListWidget()
         layout.addWidget(self.model_list)
 
         buttons = QHBoxLayout()
 
-        self.create_button = QPushButton(self.tr("Créer"))
-        self.edit_button = QPushButton(self.tr("Modifier"))
-        self.delete_button = QPushButton(self.tr("Supprimer"))
+        self.create_button = QPushButton(self.tr("Create"))
+        self.edit_button = QPushButton(self.tr("Edit"))
+        self.delete_button = QPushButton(self.tr("Delete"))
 
         buttons.addWidget(self.create_button)
         buttons.addWidget(self.edit_button)
@@ -345,7 +345,7 @@ class ModelManagerDialog(QDialog):
 
         layout.addLayout(buttons)
 
-        self.close_button = QPushButton(self.tr("Fermer"))
+        self.close_button = QPushButton(self.tr("Close"))
         layout.addWidget(self.close_button)
 
         self.create_button.clicked.connect(self.create_model)
@@ -372,9 +372,9 @@ class ModelManagerDialog(QDialog):
 
         for model_id, model in models.items():
             if model.get("built_in", True):
-                label = f"{model['name']} (intégré)"
+                label = f"{model['name']} (built-in)"
             else:
-                label = f"{model['name']} (personnalisé)"
+                label = f"{model['name']} (custom)"
 
             item = QListWidgetItem(label)
             item.setData(Qt.UserRole, model_id)
@@ -438,8 +438,8 @@ class ModelManagerDialog(QDialog):
 
         answer = QMessageBox.question(
             self,
-            self.tr("Supprimer le modèle"),
-            self.tr("Supprimer le modèle « {} » ?").format(model["name"]),
+            self.tr("Delete model"),
+            self.tr("Delete model « {} » ?").format(model["name"]),
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -452,7 +452,7 @@ class ModelManagerDialog(QDialog):
         except (ValueError, OSError) as error:
             QMessageBox.warning(
                 self,
-                self.tr("Erreur"),
+                self.tr("Error"),
                 str(error),
             )
             return

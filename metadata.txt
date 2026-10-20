@@ -5,5 +5,5 @@ version=0.1
 qgisMinimumVersion=3.22
 author=Laura Wenclik
 email=
-about=Tool for estimating screen power consumption from displayed map content.
+about=Estimate the power consumption of a screen based on the visual content of a QGIS map. Analyze pixel colors using customizable formulas and screen models to explore how map rendering may affect energy consumption.
 category=Analysis

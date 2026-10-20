@@ -14,9 +14,9 @@ SCREEN_MODELS = {
         },
         "pixel_formula": {
             "expression": (
-                "a_r * r^gamma + "
-                "a_g * g^gamma + "
-                "a_b * b^gamma"
+                "@a_r * @r ^ @gamma + "
+                "@a_g * @g ^ @gamma + "
+                "@a_b * @b ^ @gamma"
             ),
             "constants": {
                 "a_r": 0.3,
@@ -30,7 +30,7 @@ SCREEN_MODELS = {
             "unit": "W"
         },
         "output_formula": {
-            "expression": "P_base + pixel_value * (P_max - P_base)",
+            "expression": "@P_base + @pixel_value * (@P_max - @P_base)",
             "constants": {
                 "P_base": 0.1,
                 "P_max": 2.0
@@ -55,7 +55,7 @@ SCREEN_MODELS = {
             "reference": ""
         },
         "pixel_formula": {
-            "expression": "max(r, g, b)",
+            "expression": "max(@r, @g, @b)",
             "constants": {}
         },
         "output": {
@@ -84,7 +84,7 @@ SCREEN_MODELS = {
             "reference": ""
         },
         "pixel_formula": {
-            "expression": "r + g + b",
+            "expression": "@r + @g + @b",
             "constants": {}
         },
         "output": {
