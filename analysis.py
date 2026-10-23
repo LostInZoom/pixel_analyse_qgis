@@ -1,34 +1,41 @@
 import math
 from qgis.core import QgsExpression, QgsExpressionContext, QgsExpressionContextScope
-# from .formula import evaluate_output_expression
+from .formula import check_number
 
 
-def pixel_power_index(r, g, b, model):
+def pixel_power_index(expression, context, scope, r, g, b):
+    scope.setVariable("r", r)
+    scope.setVariable("g", g)
+    scope.setVariable("b", b)
+
+    result = expression.evaluate(context)
+
+    if expression.hasEvalError():
+        raise ValueError(f"Error evaluating pixel formula: {expression.evalErrorString()}")
+    return check_number(result)
+
+def prepare_pixel_expression(model):
     formula = model["pixel_formula"]
 
     expression = QgsExpression(formula["expression"])
     context = QgsExpressionContext()
     scope = QgsExpressionContextScope("Pixel Energy")
 
-    scope.setVariable("r", r)
-    scope.setVariable("g", g)
-    scope.setVariable("b", b)
+    scope.setVariable("r", 0.0)
+    scope.setVariable("g", 0.0)
+    scope.setVariable("b", 0.0)
 
     for name, value in formula.get("constants", {}).items():
         scope.setVariable(name, value)
 
     context.appendScope(scope)
-    expression.setEvalErrorString("")
 
     if not expression.prepare(context):
         raise ValueError(f"Invalid pixel formula: {expression.parserErrorString()}")
 
-    result = expression.evaluate(context)
+    return expression, context, scope
 
-    if expression.hasEvalError():
-        raise ValueError(f"Error evaluating pixel formula: {expression.evalErrorString()}")
 
-    return result
 
 def average(values):
 
@@ -59,7 +66,7 @@ def analyze_pixels(image, model):
     L = []
 
     total_power_index = 0
-
+    expression, context, scope = prepare_pixel_expression(model)
     for y in range(height):
         for x in range(width):
 
@@ -81,7 +88,7 @@ def analyze_pixels(image, model):
             normalized_g = g / 255
             normalized_b = b / 255
 
-            total_power_index += pixel_power_index(normalized_r,normalized_g,normalized_b,model)
+            total_power_index += pixel_power_index(expression,context,scope,normalized_r,normalized_g,normalized_b)
     if pixel_count > 0:
         mean_ratio = total_power_index / pixel_count
     else :

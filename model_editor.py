@@ -9,7 +9,7 @@ from qgis.PyQt.QtWidgets import (QDialog,QVBoxLayout,QFormLayout,QHBoxLayout,QLa
 from qgis.gui import QgsExpressionBuilderDialog
 from qgis.core import QgsExpression,QgsExpressionContext, QgsExpressionContextScope
 from qgis.PyQt.QtWidgets import QLayout
-from .formula import FormulaError
+from .formula import FormulaError, check_number
 from .model_storage import save_custom_model
 from qgis.PyQt.QtWidgets import QToolButton
 class ModelEditorDialog(QDialog):
@@ -190,118 +190,6 @@ class ModelEditorDialog(QDialog):
 
         layout.addLayout(row)
 
-    def create_token_buttons(self, line_edit, tokens):
-        layout = QHBoxLayout()
-
-        for token in tokens:
-            button = QPushButton(token)
-            button.setMaximumWidth(90)
-            button.clicked.connect(
-                lambda checked=False, value=token, target=line_edit:
-                target.insert(value)
-            )
-            layout.addWidget(button)
-
-        return layout
-
-    def create_constants_table(self):
-        table = QTableWidget(0, 2)
-        table.setHorizontalHeaderLabels([self.tr("Name"),self.tr("Value")])
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        table.setToolTip(
-            self.tr(
-                "Define the constants used in the formula.\n"
-                "Name: variable name used in the formula "
-                "(for example, gamma or a_r).\n"
-                "Value: numerical value assigned to this constant.\n"
-                "The name must match the one used in the formula."
-            )
-        )
-        table.horizontalHeaderItem(0).setToolTip(self.tr("Name of the constant, as written in the formula."))
-        table.horizontalHeaderItem(1).setToolTip(self.tr("Numerical value assigned to the constant."))
-        return table
-
-    def create_constant_buttons(self, table):
-        layout = QHBoxLayout()
-
-        add_button = QPushButton(self.tr("Add a constant"))
-        add_button.setToolTip(
-            self.tr(
-                "Add a row to define a new constant for this formula. "
-                "Use its name in the formula and enter its numerical value."
-            )
-        )
-        add_button.clicked.connect(
-            lambda checked=False, target=table:
-            self.add_constant_row(target)
-        )
-
-        remove_button = QPushButton(self.tr("Remove selected constant"))
-        remove_button.setToolTip(
-            self.tr(
-                "Remove the selected constant from this formula. "
-                "Check that the formula does not use this constant anymore."
-            )
-        )
-        remove_button.clicked.connect(
-            lambda checked=False, target=table:
-            self.remove_constant_row(target)
-        )
-
-        layout.addWidget(add_button)
-        layout.addWidget(remove_button)
-
-        return layout
-
-    def add_constant_row(self, table):
-        row = table.rowCount()
-        table.insertRow(row)
-        table.setItem(row, 0, QTableWidgetItem("constant"))
-        table.setItem(row, 1, QTableWidgetItem("1.0"))
-
-    def remove_constant_row(self, table):
-        row = table.currentRow()
-
-        if row >= 0:
-            table.removeRow(row)
-
-    def read_constants(self, table):
-        constants = {}
-
-        for row in range(table.rowCount()):
-            name_item = table.item(row, 0)
-            value_item = table.item(row, 1)
-
-            if name_item is None or value_item is None:
-                raise ValueError(self.tr("Every constant needs a name and a value."))
-
-            name = name_item.text().strip()
-            value_text = value_item.text().strip()
-
-            if not name or not value_text:
-                raise ValueError(self.tr("Constant names and values cannot be empty."))
-
-            try:
-                value = float(value_text)
-            except ValueError as error:
-                raise ValueError(self.tr("Constant values must be numbers.")) from error
-
-            if name in constants:
-                raise ValueError(self.tr("Duplicate constant: ") + name)
-
-            constants[name] = value
-
-        return constants
-
-    def load_constants(self, table, constants):
-        table.setRowCount(0)
-
-        for name, value in constants.items():
-            row = table.rowCount()
-            table.insertRow(row)
-            table.setItem(row, 0, QTableWidgetItem(name))
-            table.setItem(row, 1, QTableWidgetItem(str(value)))
-
     def load_model(self):
         if not self.model:
             return
@@ -333,11 +221,9 @@ class ModelEditorDialog(QDialog):
         self.pixel_formula_edit.setText(
             pixel_formula.get("expression", "")
         )
-        # self.load_constants(self.pixel_constants_table,pixel_formula.get("constants", {}))
 
         output_formula = self.model.get("output_formula") or {}
         self.output_formula_edit.setText(output_formula.get("expression", ""))
-        # self.load_constants(self.output_constants_table,output_formula.get("constants", {}))
 
         self.update_output_controls()
 
@@ -370,7 +256,7 @@ class ModelEditorDialog(QDialog):
         if expression.hasEvalError():
             raise ValueError(expression.evalErrorString())
 
-        return result
+        return check_number(result)
 
 
     def evaluate_output_expression(self, expression_text, constants, pixel_value=0.5):
@@ -396,7 +282,7 @@ class ModelEditorDialog(QDialog):
         if expression.hasEvalError():
             raise ValueError(expression.evalErrorString())
 
-        return result
+        return check_number(result)
 
 
 
