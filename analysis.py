@@ -143,9 +143,9 @@ def analyze_pixels(image, model):
                 "type": "indicator",
                 "indicator": indicator,
                 "model": model["name"],
-                "unit": output.get("unit"),
-                "min": output.get("min"),
-                "max": output.get("max")
+                "unit": output.get("unit")
+                # "min": output.get("min"),
+                # "max": output.get("max")
             }
     
     else:

@@ -114,27 +114,27 @@ def save_custom_model(model):
         if not isinstance(output_expression, str) or not output_expression.strip():
             raise ValueError("The output formula cannot be empty.")
 
-    if output_type == "indicator":
-        minimum = output.get("min")
-        maximum = output.get("max")
+    # if output_type == "indicator":
+        # minimum = output.get("min")
+        # maximum = output.get("max")
 
-        if (
-            isinstance(minimum, bool)
-            or not isinstance(minimum, (int, float))
-        ):
-            raise ValueError("The indicator minimum must be a number.")
+        # if (
+        #     isinstance(minimum, bool)
+        #     or not isinstance(minimum, (int, float))
+        # ):
+        #     raise ValueError("The indicator minimum must be a number.")
 
-        if (
-            isinstance(maximum, bool)
-            or not isinstance(maximum, (int, float))
-        ):
-            raise ValueError("The indicator maximum must be a number.")
+        # if (
+        #     isinstance(maximum, bool)
+        #     or not isinstance(maximum, (int, float))
+        # ):
+        #     raise ValueError("The indicator maximum must be a number.")
 
-        if not math.isfinite(minimum) or not math.isfinite(maximum):
-            raise ValueError("Indicator bounds must be finite numbers.")
+        # if not math.isfinite(minimum) or not math.isfinite(maximum):
+        #     raise ValueError("Indicator bounds must be finite numbers.")
 
-        if maximum < minimum:
-            raise ValueError("The indicator maximum must be greater than or equal to the minimum.")
+        # if maximum < minimum:
+        #     raise ValueError("The indicator maximum must be greater than or equal to the minimum.")
 
     model_to_save = dict(model)
     model_to_save["name"] = name.strip()

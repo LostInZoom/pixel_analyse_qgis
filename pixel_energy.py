@@ -1,6 +1,6 @@
 import os
 
-from qgis.PyQt.QtCore import QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QTranslator, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QAction
 
 from .dialog import PixelEnergyDialog
@@ -16,11 +16,10 @@ class PixelEnergy:
         self.translator = None
         
 
-        locale = QCoreApplication.instance().property("locale/userLocale")
+        
 
-        if not locale:
-            locale = "en"
 
+        locale = QSettings().value("locale/userLocale", "en")
         language = locale[:2].lower()
 
         if language not in ("fr", "en"):
@@ -38,6 +37,7 @@ class PixelEnergy:
                 self.translator = QTranslator()
                 if self.translator.load(translation_file):
                     QCoreApplication.installTranslator(self.translator)
+
                 else:
                     self.translator = None
 

@@ -12,6 +12,22 @@ from qgis.PyQt.QtWidgets import QLayout
 from .formula import FormulaError, check_number
 from .model_storage import save_custom_model
 from qgis.PyQt.QtWidgets import QToolButton
+
+
+def exec_dialog(dialog):
+    if hasattr(dialog, "exec"):
+        return dialog.exec()
+    return dialog.exec_()
+
+
+try:
+    SET_MINIMUM_SIZE = QLayout.SetMinimumSize
+except AttributeError:
+    SET_MINIMUM_SIZE = QLayout.SizeConstraint.SetMinimumSize
+
+
+
+
 class ModelEditorDialog(QDialog):
 
     def __init__(self, parent=None, model=None):
@@ -29,7 +45,7 @@ class ModelEditorDialog(QDialog):
     def build_ui(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(4)
-        layout.setSizeConstraint(QLayout.SetMinimumSize)
+        layout.setSizeConstraint(SET_MINIMUM_SIZE)
 
         form = QFormLayout()
         form.setVerticalSpacing(6)
@@ -48,18 +64,7 @@ class ModelEditorDialog(QDialog):
         self.output_type_combo.currentIndexChanged.connect(self.update_output_controls)
         form.addRow(self.tr("Output type:"),self.output_type_combo)
 
-        self.indicator_min = QDoubleSpinBox()
-        self.indicator_min.setRange(-1e9, 1e9)
-        self.indicator_min.setDecimals(6)
-        self.indicator_min.setValue(0)
 
-        self.indicator_max = QDoubleSpinBox()
-        self.indicator_max.setRange(-1e9, 1e9)
-        self.indicator_max.setDecimals(6)
-        self.indicator_max.setValue(1)
-
-        form.addRow(self.tr("Indicator minimum:"),self.indicator_min)
-        form.addRow(self.tr("Indicator maximum:"),self.indicator_max)
 
         self.unit_edit = QLineEdit()
         self.unit_edit.setPlaceholderText(self.tr("For example: W"))
@@ -69,9 +74,9 @@ class ModelEditorDialog(QDialog):
 
         self.add_info_label(
                 layout,
-                "Pixel formula:",
-                "Applied to every pixel. Use @r, @g and @b for normalized "
-                "red, green and blue values between 0 and 1."
+                self.tr("Pixel formula:"),
+                self.tr("Applied to every pixel. Use @r, @g and @b for normalized "
+                "red, green and blue values between 0 and 1.")
             )
 
         self.pixel_formula_edit = QLineEdit()
@@ -87,9 +92,9 @@ class ModelEditorDialog(QDialog):
 
         self.add_info_label(
             layout,
-            "Output formula (optional):",
-            "Calculates the final output from @pixel_value, @pixel_count, "
-            "@width and @height. For power models, it calculates total power."
+            self.tr("Output formula (optional):"),
+            self.tr("Calculates the final output from @pixel_value, @pixel_count, "
+            "@width and @height. For power models, it calculates total power.")
         )
 
         self.output_formula_edit = QLineEdit()
@@ -143,7 +148,7 @@ class ModelEditorDialog(QDialog):
         )
         dialog.setWindowTitle(self.tr("Pixel formula builder"))
 
-        if dialog.exec_():
+        if exec_dialog(dialog):
             self.pixel_formula_edit.setText(dialog.expressionText())
 
 
@@ -168,18 +173,18 @@ class ModelEditorDialog(QDialog):
         )
         dialog.setWindowTitle(self.tr("Output formula builder"))
 
-        if dialog.exec_():
+        if exec_dialog(dialog):
             self.output_formula_edit.setText(dialog.expressionText())
 
     def add_info_label(self, layout, label_text, tooltip_text):
         row = QHBoxLayout()
 
-        label = QLabel(self.tr(label_text))
+        label = QLabel(label_text)
 
         info_button = QToolButton()
         info_button.setText("ⓘ")
         info_button.setAutoRaise(True)
-        info_button.setToolTip(self.tr(tooltip_text))
+        info_button.setToolTip(tooltip_text)
         info_button.setAccessibleName(
             self.tr("Information: ") + self.tr(label_text)
         )
@@ -213,8 +218,8 @@ class ModelEditorDialog(QDialog):
         if index >= 0:
             self.output_type_combo.setCurrentIndex(index)
 
-        self.indicator_min.setValue(output.get("min", 0))
-        self.indicator_max.setValue(output.get("max", 1))
+        # self.indicator_min.setValue(output.get("min", 0))
+        # self.indicator_max.setValue(output.get("max", 1))
         self.unit_edit.setText(output.get("unit") or "")
 
         pixel_formula = self.model.get("pixel_formula", {})
@@ -229,8 +234,8 @@ class ModelEditorDialog(QDialog):
 
     def update_output_controls(self):
         is_indicator = (self.output_type_combo.currentData() == "indicator")
-        self.indicator_min.setEnabled(is_indicator)
-        self.indicator_max.setEnabled(is_indicator)
+        # self.indicator_min.setEnabled(is_indicator)
+        # self.indicator_max.setEnabled(is_indicator)
         self.unit_edit.setEnabled(True)
 
     
@@ -298,8 +303,8 @@ class ModelEditorDialog(QDialog):
         if output_type == "power" and not output_expression:
             raise ValueError(self.tr("A power model requires an output formula."))
 
-        if (output_type == "indicator"and self.indicator_max.value() < self.indicator_min.value()):
-            raise ValueError(self.tr("The indicator maximum must be at least its minimum."))
+        # if (output_type == "indicator"and self.indicator_max.value() < self.indicator_min.value()):
+        #     raise ValueError(self.tr("The indicator maximum must be at least its minimum."))
 
         return {}, {}
 
@@ -349,9 +354,9 @@ class ModelEditorDialog(QDialog):
                 "unit": self.unit_edit.text().strip() or None
             }
 
-            if output_type == "indicator":
-                output["min"] = self.indicator_min.value()
-                output["max"] = self.indicator_max.value()
+            # if output_type == "indicator":
+            #     output["min"] = self.indicator_min.value()
+            #     output["max"] = self.indicator_max.value()
 
             output_formula = None
 

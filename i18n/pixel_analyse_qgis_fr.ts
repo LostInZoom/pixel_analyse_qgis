@@ -1,365 +1,298 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="fr_FR">
 <context>
     <name>ModelEditorDialog</name>
     <message>
         <location filename="../model_editor.py" line="22"/>
         <source>Custom screen model</source>
-        <translation type="unfinished"></translation>
+        <translation>Edition du modèle</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="38"/>
         <source>Model name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom du modèle:</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="41"/>
         <source>Other</source>
-        <translation type="unfinished"></translation>
+        <translation>Autre</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="42"/>
         <source>Screen technology:</source>
-        <translation type="unfinished"></translation>
+        <translation>Type d&apos;écran :</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="45"/>
         <source>Relative indicator</source>
-        <translation type="unfinished"></translation>
+        <translation>Indicateur</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="46"/>
         <source>Power</source>
-        <translation type="unfinished"></translation>
+        <translation>Puissance</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="48"/>
         <source>Output type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Type de sortie :</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="60"/>
-        <source>Indicator minimum:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="61"/>
-        <source>Indicator maximum:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="64"/>
+        <location filename="../model_editor.py" line="53"/>
         <source>For example: W</source>
-        <translation type="unfinished"></translation>
+        <translation>Par exemple : W</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="65"/>
+        <location filename="../model_editor.py" line="54"/>
         <source>Output unit:</source>
-        <translation type="unfinished"></translation>
+        <translation>Unité de sortie:</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="100"/>
+        <location filename="../model_editor.py" line="89"/>
         <source>Build expression...</source>
-        <translation type="unfinished"></translation>
+        <translation>Construire l&apos;expression ..</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="108"/>
+        <location filename="../model_editor.py" line="97"/>
         <source>Test formulas</source>
-        <translation type="unfinished"></translation>
+        <translation>Test des formules</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="112"/>
+        <location filename="../model_editor.py" line="101"/>
         <source>Save model</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="116"/>
+        <location filename="../model_editor.py" line="105"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="143"/>
+        <location filename="../model_editor.py" line="132"/>
         <source>Pixel formula builder</source>
-        <translation type="unfinished"></translation>
+        <translation>Constructeur de la formule pixel</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="168"/>
+        <location filename="../model_editor.py" line="157"/>
         <source>Output formula builder</source>
-        <translation type="unfinished"></translation>
+        <translation>Constructeur de la formule de sortie</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="182"/>
+        <location filename="../model_editor.py" line="171"/>
         <source>Information: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="208"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="208"/>
-        <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="210"/>
-        <source>Define the constants used in the formula.
-Name: variable name used in the formula (for example, gamma or a_r).
-Value: numerical value assigned to this constant.
-The name must match the one used in the formula.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="219"/>
-        <source>Name of the constant, as written in the formula.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="220"/>
-        <source>Numerical value assigned to the constant.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="226"/>
-        <source>Add a constant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="227"/>
-        <source>Add a row to define a new constant for this formula. Use its name in the formula and enter its numerical value.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="238"/>
-        <source>Remove selected constant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="239"/>
-        <source>Remove the selected constant from this formula. Check that the formula does not use this constant anymore.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="275"/>
-        <source>Every constant needs a name and a value.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="281"/>
-        <source>Constant names and values cannot be empty.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="286"/>
-        <source>Constant values must be numbers.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="289"/>
-        <source>Duplicate constant: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="443"/>
+        <location filename="../model_editor.py" line="318"/>
         <source>A power model requires an output formula.</source>
-        <translation type="unfinished"></translation>
+        <translation>Une formule de sortie est nécéssaire</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="415"/>
-        <source>The indicator maximum must be at least its minimum.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../model_editor.py" line="424"/>
+        <location filename="../model_editor.py" line="299"/>
         <source>Pixel formula is valid.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>la formule est valide</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="424"/>
+        <location filename="../model_editor.py" line="299"/>
         <source>Example result: </source>
-        <translation type="unfinished"></translation>
+        <translation>Exemple de résultat:</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="434"/>
+        <location filename="../model_editor.py" line="309"/>
         <source>Example output: </source>
-        <translation type="unfinished"></translation>
+        <translation>Exemple de sortie</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="445"/>
+        <location filename="../model_editor.py" line="320"/>
         <source>Formula test</source>
-        <translation type="unfinished"></translation>
+        <translation>Test de formule</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="448"/>
+        <location filename="../model_editor.py" line="323"/>
         <source>Invalid formula</source>
-        <translation type="unfinished"></translation>
+        <translation>Formule invalide</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="486"/>
+        <location filename="../model_editor.py" line="361"/>
         <source>Custom model</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle édité</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="500"/>
+        <location filename="../model_editor.py" line="375"/>
         <source>Enter a model name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entrer un nom de modèle</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="508"/>
+        <location filename="../model_editor.py" line="383"/>
         <source>Model saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle sauvegardé</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="508"/>
+        <location filename="../model_editor.py" line="383"/>
         <source>The custom model has been saved.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le modèle a été sauvegardé</translation>
     </message>
     <message>
-        <location filename="../model_editor.py" line="517"/>
+        <location filename="../model_editor.py" line="392"/>
         <source>Could not save model</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible à sauvegarger</translation>
+    </message>
+    <message>
+        <location filename="../model_editor.py" line="58"/>
+        <source>Pixel formula:</source>
+        <translation>Formule pixel :</translation>
+    </message>
+    <message>
+        <location filename="../model_editor.py" line="58"/>
+        <source>Applied to every pixel. Use @r, @g and @b for normalized red, green and blue values between 0 and 1.</source>
+        <translation>Appliquée à chaque pixel. Utilisez @r, @g et @b pour accéder aux valeurs normalisées du rouge, du vert et du bleu, comprises entre 0 et 1.</translation>
+    </message>
+    <message>
+        <location filename="../model_editor.py" line="76"/>
+        <source>Output formula (optional):</source>
+        <translation>Formule de sortie (facultative)</translation>
+    </message>
+    <message>
+        <location filename="../model_editor.py" line="76"/>
+        <source>Calculates the final output from @pixel_value, @pixel_count, @width and @height. For power models, it calculates total power.</source>
+        <translation> Calcule le résultat final à partir de @pixel_value, @pixel_count, @width et @height. Pour les modèles de puissance, elle calcule la puissance totale.</translation>
     </message>
 </context>
 <context>
     <name>ModelManagerDialog</name>
     <message>
-        <location filename="../dialog.py" line="326"/>
+        <location filename="../dialog.py" line="329"/>
         <source>Model management</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestions des modèles</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="331"/>
+        <location filename="../dialog.py" line="334"/>
         <source>Available models :</source>
-        <translation type="unfinished"></translation>
+        <translation>modèles disponibles :</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="338"/>
+        <location filename="../dialog.py" line="341"/>
         <source>Create</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="339"/>
+        <location filename="../dialog.py" line="342"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Edition</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="340"/>
+        <location filename="../dialog.py" line="343"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="348"/>
+        <location filename="../dialog.py" line="351"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="439"/>
+        <location filename="../dialog.py" line="442"/>
         <source>Delete model</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer modèle</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="439"/>
+        <location filename="../dialog.py" line="442"/>
         <source>Delete model « {} » ?</source>
-        <translation type="unfinished"></translation>
+        <translation>Supprimer le modèle « {} » ?</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="453"/>
+        <location filename="../dialog.py" line="456"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Erreur</translation>
     </message>
 </context>
 <context>
     <name>PixelEnergyDialog</name>
     <message>
-        <location filename="../dialog.py" line="99"/>
+        <location filename="../dialog.py" line="103"/>
         <source>Pixel Energy</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="104"/>
+        <location filename="../dialog.py" line="108"/>
         <source>Screen model:</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle :</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="119"/>
+        <location filename="../dialog.py" line="123"/>
         <source>• Manage models…</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestion des modèles...</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="130"/>
+        <location filename="../dialog.py" line="134"/>
         <source>Select a area</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner une zone</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="135"/>
+        <location filename="../dialog.py" line="139"/>
         <source>Analyze entire canvas</source>
-        <translation type="unfinished"></translation>
+        <translation>Analyse du canvas entier</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="142"/>
+        <location filename="../dialog.py" line="146"/>
         <source>Results :</source>
-        <translation type="unfinished"></translation>
+        <translation>Résultats:</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="173"/>
+        <location filename="../dialog.py" line="177"/>
         <source>===== SELECTED AREA =====
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>===== ZONE SELECTIONNE=====
+
+</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="175"/>
+        <location filename="../dialog.py" line="179"/>
         <source>Geographic extent
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Zone géographique</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="181"/>
+        <location filename="../dialog.py" line="185"/>
         <source>Screen extent
 </source>
-        <translation type="unfinished"></translation>
+        <translation>zone de l&apos;écran</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="188"/>
+        <location filename="../dialog.py" line="192"/>
         <source>===== RESULTS =====
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>===== RESULTATS =====\
+
+</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="193"/>
+        <location filename="../dialog.py" line="197"/>
         <source>RGB
 </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../dialog.py" line="203"/>
-        <source>Luminance
-</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../dialog.py" line="207"/>
+        <source>Luminance
+</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../dialog.py" line="211"/>
         <source>Energy
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Energie</translation>
     </message>
     <message>
-        <location filename="../dialog.py" line="217"/>
+        <location filename="../dialog.py" line="221"/>
         <source>Indicator
 </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QGIS</name>
-    <message>
-        <location filename="../pixel_energy.py" line="19"/>
-        <source>locale</source>
-        <translation type="unfinished"></translation>
+        <translation>Indicateur</translation>
     </message>
 </context>
 </TS>

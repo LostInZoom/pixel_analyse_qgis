@@ -22,7 +22,25 @@ from .analysis import analyze_pixels
 from .model_editor import ModelEditorDialog
 from .model_storage import load_custom_models, delete_custom_model
 
+try:
+    USER_ROLE = Qt.UserRole
+except AttributeError:
+    USER_ROLE = Qt.ItemDataRole.UserRole
 
+try:
+    LEFT_BUTTON = Qt.LeftButton
+except AttributeError:
+    LEFT_BUTTON = Qt.MouseButton.LeftButton
+
+try:
+    DIALOG_ACCEPTED = QDialog.Accepted
+except AttributeError:
+    DIALOG_ACCEPTED = QDialog.DialogCode.Accepted
+
+def exec_dialog(dialog):
+    if hasattr(dialog, "exec"):
+        return dialog.exec()
+    return dialog.exec_()
 
 class RectangleMapTool(QgsMapTool):
 
@@ -40,7 +58,7 @@ class RectangleMapTool(QgsMapTool):
         self.rubber_band.setWidth(2)
 
     def canvasPressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == LEFT_BUTTON:
             self.start_screen = event.pos()
             self.start_point = self.toMapCoordinates(event.pos())
             self.rubber_band.reset(QgsWkbTypes.PolygonGeometry)
@@ -52,7 +70,7 @@ class RectangleMapTool(QgsMapTool):
         self.update_rectangle()
 
     def canvasReleaseEvent(self, event):
-        if event.button() != Qt.LeftButton:
+        if event.button() != LEFT_BUTTON:
             return
 
         if self.start_point is None:
@@ -70,6 +88,7 @@ class RectangleMapTool(QgsMapTool):
         self.end_point = None
         
         self.callback(start, end,start_screen,end_screen)
+        self.canvas.unsetMapTool(self)
         
     def update_rectangle(self):
 
@@ -91,6 +110,9 @@ class RectangleMapTool(QgsMapTool):
 
     def clear_selection(self):
         self.rubber_band.reset(QgsWkbTypes.PolygonGeometry)
+
+
+
 class PixelEnergyDialog(QDialog):
 
     def __init__(self, iface):
@@ -103,12 +125,6 @@ class PixelEnergyDialog(QDialog):
         # Modèle
         layout.addWidget(QLabel(self.tr("Screen model:")))
 
-        # self.model_combo = QComboBox()
-        # for model_id, model in SCREEN_MODELS.items():
-        #     self.model_combo.addItem(model["name"],model_id)
-
-        # layout.addWidget(self.model_combo)
-        
         self.model_combo = QComboBox()
 
         self.refresh_models()
@@ -219,8 +235,7 @@ class PixelEnergyDialog(QDialog):
             text += f"{result['energy']['indicator']:.4f}\n"
 
             text += f"  {self.tr('Model')} : {result['energy']['model']}\n"
-            text += f"  {self.tr('Min')} : {result['energy']['min']}\n"
-            text += f"  {self.tr('Max')} : {result['energy']['max']}\n"
+
 
         self.results.setPlainText(text)
 
@@ -315,7 +330,10 @@ class PixelEnergyDialog(QDialog):
         selected_id = self.model_combo.currentData()
 
         dialog = ModelManagerDialog(self)
-        dialog.exec_()
+        if hasattr(dialog, "exec"):
+            dialog.exec()
+        else:
+            dialog.exec_()
 
         self.refresh_models(selected_id)   
 
@@ -377,7 +395,7 @@ class ModelManagerDialog(QDialog):
                 label = f"{model['name']} (custom)"
 
             item = QListWidgetItem(label)
-            item.setData(Qt.UserRole, model_id)
+            item.setData(USER_ROLE, model_id)
             self.model_list.addItem(item)
 
             if model_id == selected_id:
@@ -394,7 +412,7 @@ class ModelManagerDialog(QDialog):
         if item is None:
             is_custom = False
         else:
-            model_id = item.data(Qt.UserRole)
+            model_id = item.data(USER_ROLE)
             model = self.get_models().get(model_id, {})
             is_custom = not model.get("built_in", True)
 
@@ -403,8 +421,8 @@ class ModelManagerDialog(QDialog):
 
     def create_model(self):
         editor = ModelEditorDialog(parent=self)
-
-        if editor.exec_() == QDialog.Accepted:
+        
+        if exec_dialog(editor) == DIALOG_ACCEPTED:
             self.refresh_list(editor.model["id"])
 
     def edit_model(self, *args):
@@ -413,7 +431,7 @@ class ModelManagerDialog(QDialog):
         if item is None:
             return
 
-        model_id = item.data(Qt.UserRole)
+        model_id = item.data(USER_ROLE)
         model = self.get_models().get(model_id)
 
         if model is None or model.get("built_in", True):
@@ -421,7 +439,7 @@ class ModelManagerDialog(QDialog):
 
         editor = ModelEditorDialog(parent=self, model=model)
 
-        if editor.exec_() == QDialog.Accepted:
+        if exec_dialog(editor) == DIALOG_ACCEPTED:
             self.refresh_list(model_id)
 
     def delete_model(self):
@@ -430,7 +448,7 @@ class ModelManagerDialog(QDialog):
         if item is None:
             return
 
-        model_id = item.data(Qt.UserRole)
+        model_id = item.data(USER_ROLE)
         model = self.get_models().get(model_id)
 
         if model is None or model.get("built_in", True):
