@@ -1,15 +1,14 @@
 [general]
 name=Pixel Energy
 description=Estimate screen power consumption or calculate an indicator from displayed map pixels.
-version=1
+version=1.0.0
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
 author=Laura Wenclik
-email=
+email=laura.wenclik@ign.fr
 about=Pixel Energy is a QGIS plugin compatible with QGIS 3 and QGIS 4. It analyzes pixel colors displayed in the map canvas and applies screen models and formulas to estimate screen power consumption or calculate an indicator.
-category=Analysis
 icon=images/icon.png
 tags=energy,screen,pixels,cartography,map,OLED,LCD
 homepage=
-tracker=
-repository=
+tracker=//github.com/LostInZoom/pixel_analyse_qgis/issues
+repository=https://github.com/LostInZoom/pixel_analyse_qgis
