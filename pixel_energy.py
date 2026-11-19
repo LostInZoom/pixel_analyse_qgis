@@ -2,7 +2,7 @@ import os
 
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QAction
-
+from qgis.PyQt.QtGui import QIcon
 from .dialog import PixelEnergyDialog
 
 
@@ -43,10 +43,14 @@ class PixelEnergy:
 
 
     def initGui(self):
-        self.action = QAction("Pixel Energy",self.iface.mainWindow())
+
+        icon_path = os.path.join(os.path.dirname(__file__), "images", "icon.png")
+
+        self.action = QAction(QIcon(icon_path), "Pixel Energy", self.iface.mainWindow())
         self.action.triggered.connect(self.run)
-        self.iface.addPluginToMenu("&Pixel Energy",self.action)
+        self.iface.addPluginToMenu("&Pixel Energy", self.action)
         self.iface.addToolBarIcon(self.action)
+
 
     def unload(self):
         if self.action:
