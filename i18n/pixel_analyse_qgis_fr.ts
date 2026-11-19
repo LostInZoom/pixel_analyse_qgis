@@ -46,7 +46,7 @@
     <message>
         <location filename="../model_editor.py" line="54"/>
         <source>Output unit:</source>
-        <translation>Unité de sortie:</translation>
+        <translation>Unité de sortie :</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="89"/>
@@ -102,7 +102,7 @@
     <message>
         <location filename="../model_editor.py" line="309"/>
         <source>Example output: </source>
-        <translation>Exemple de sortie</translation>
+        <translation>Exemple de sortie :</translation>
     </message>
     <message>
         <location filename="../model_editor.py" line="320"/>
@@ -266,7 +266,7 @@
         <source>===== RESULTS =====
 
 </source>
-        <translation>===== RESULTATS =====\
+        <translation>===== RESULTATS =====
 
 </translation>
     </message>

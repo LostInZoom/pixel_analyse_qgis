@@ -1,80 +1,101 @@
-## pluging QGIS
+# Pixel Energy
 
-**Pixel Energy** est un plugin pour QGIS qui permet d’estimer la consommation énergétique ou de calculer un indicateur  des pixels affichés.
+**Pixel Energy** is a QGIS plugin that allows users to estimate the energy consumption of a display or calculate an indicator based on the pixels displayed in the map canvas.
 
-Le plugin est actuellement en développement.
+The plugin analyses pixel colours and applies models and formulas to investigate the influence of map content on estimated energy consumption.
 
-## Prérequis
+## Requirements
 
-- Une installation de **QGIS 3.x**.
+- QGIS 3.22 or later.
+- Compatible with both QGIS 3 and QGIS 4.
 
-Le plugin utilise l’environnement Python et les bibliothèques PyQGIS fournis avec QGIS. Aucune installation séparée de Python n’est normalement nécessaire.
+The plugin uses the Python environment and PyQGIS libraries provided with QGIS. A separate Python installation is normally not required.
 
-## Installation manuelle option 1
+## Manual Installation
 
-Cette version de test peut être installée en copiant le dossier du plugin dans le répertoire des extensions de QGIS.
+### Option 1 — Installing from the Plugin Folder
 
-1. Téléchargez ou récupérez le dossier du plugin contenant notamment `__init__.py`, `metadata.txt` et les fichiers Python du plugin.
-2. Ouvrez QGIS.
-3. Repérez le répertoire des plugins du profil QGIS. Vous pouvez généralement y accéder depuis **Préférences / Options → Système** ou en ouvrant le dossier du profil utilisateur de QGIS.
-4. Dans le répertoire `python/plugins`, copiez le dossier du plugin. Le dossier doit porter le nom attendu par le projet, par exemple `pixel_analyse_qgis`.
-5. Vérifiez que `metadata.txt` et `__init__.py` se trouvent directement dans ce dossier, et non dans un sous-dossier supplémentaire.
-6. Redémarrez QGIS si le plugin n’apparaît pas.
-7. Ouvrez **Extensions → Installer/Gérer les extensions…**, recherchez **Pixel Energy**, puis cochez la case pour l’activer.
+1. Download or obtain the plugin folder, which should contain files such as `__init__.py`, `metadata.txt`, and the Python source files.
+2. Open QGIS.
+3. Locate the plugin directory of your QGIS profile. You can usually access it through **Settings → Options → System**, or by opening your QGIS user profile directory.
+4. Copy the plugin folder into the `python/plugins` directory. The folder must be named `pixel_analyse_qgis`.
+5. Make sure that `metadata.txt` and `__init__.py` are located directly inside this folder, not in an additional subfolder.
+6. Restart QGIS if necessary.
+7. Open **Plugins → Manage and Install Plugins…**, search for **Pixel Energy**, and tick the checkbox to enable it.
+
+### Option 2 — Installing from a ZIP Archive
+
+1. Obtain the plugin folder.
+2. Compress the `pixel_analyse_qgis` folder into a ZIP archive, preserving its directory structure.
+3. Open QGIS.
+4. Go to **Plugins → Manage and Install Plugins…**.
+5. Select the **Install from ZIP** tab.
+6. Select the ZIP archive and start the installation.
+7. Enable the plugin if necessary.
+
+## Features
+
+- Analyse a selected rectangular area of the QGIS map canvas.
+- Analyse the entire map canvas.
+- Calculate pixel colour statistics, including red, green and blue (RGB) components, as well as luminance.
+- Select a display model from the built-in models.
+- Create, edit and delete custom models.
+- Define a per-pixel calculation formula.
+- Define an output formula, depending on the model type, to calculate estimated power consumption or an indicator.
+
+## Usage
+
+### 1. Opening Pixel Energy
+
+Once the plugin is enabled, launch it from its entry in the QGIS menu or toolbar.
+
+### 2. Selecting a Model
+
+Select the model you want to use from the available list.
+
+Models define, among other things, the display technology being considered, the formula applied to each pixel, and the type of result calculated.
+
+The model management button allows you to create, edit or delete custom models. Built-in models are provided by the plugin and cannot be edited or deleted through this interface.
+
+### 3. Analysing an Area or the Entire Map Canvas
+
+The plugin offers two analysis options:
+
+- Select a rectangular area of the map canvas to analyse.
+- Analyse the entire map canvas.
+
+Once the analysis is complete, the results and corresponding statistics are displayed in the plugin window.
+
+The statistics describe the pixels in the analysed screenshot. Power estimates depend on the selected model and do not represent a direct measurement of the actual electrical power consumption of the computer or display.
+
+### 4. Creating a Custom Model
+
+In the main window, open the model management interface and select the option to create a new model.
+
+A custom model can include:
+
+- A name.
+- A display technology.
+- A per-pixel calculation formula.
+- An output type: indicator or power.
+- An output formula if the model produces a power estimate.
+
+To build the per-pixel formula, you can use the following RGB variables:
+
+- `@r`: red component of the pixel.
+- `@g`: green component of the pixel.
+- `@b`: blue component of the pixel.
+
+For an output formula, additional variables are available:
+
+- `@pixel_value`: result of the per-pixel calculation.
+- `@pixel_count`: number of analysed pixels.
+- `@width`: width of the analysed image.
+- `@height`: height of the analysed image.
+
+Use the formula-building and testing tools available in the editor to check the syntax
 
 
-## Installation manuelle option 2
-1. Téléchargez ou récupérez le dossier du plugin contenant notamment `__init__.py`, `metadata.txt` et les fichiers Python du plugin.
-2. zipper le dossier
-3. Ouvrez QGIS
-4. Ouvrez **Extensions → Installer/Gérer les extensions…**, dans l'onglet "Installer depuis un zip" selectionner le dossier zippé.
 
 
 
-## Fonctionnalités
-
-- Analyser une zone rectangulaire sélectionnée sur le canevas de QGIS.
-- Analyser l’ensemble du canevas cartographique.
-- Calculer des statistiques sur les couleurs des pixels, notamment les composantes rouge, verte et bleue, ainsi que la luminance.
-- Choisir un modèle d’écran parmi les modèles intégrés.
-- Créer, modifier et supprimer des modèles personnalisés.
-- Définir la formule utilisée pour calculer la contribution d’un pixel, avec des constantes configurables.
-- Définir, selon le modèle, une formule de sortie pour calculer une puissance estimée ou un indicateur.
-
-
-## Utilisation
-
-### 1. Ouvrir Pixel Energy
-
-Après avoir activé le plugin, lancez-le depuis son entrée dans le menu ou la barre d’outils de QGIS, selon la configuration de l’interface.
-
-### 2. Choisir un modèle
-
-Sélectionnez le modèle d’écran à utiliser dans la liste proposée. Le résultat dépend notamment de la technologie d’écran, des coefficients et des formules associés au modèle.
-
-Le bouton de gestion des modèles permet de créer, modifier ou supprimer des modèles personnalisés. Les modèles intégrés sont fournis par le plugin et ne sont pas destinés à être modifiés ou supprimés depuis cette interface.
-
-### 3. Analyser une zone ou le canevas
-
-Suivez les boutons et les instructions de la fenêtre du plugin pour :
-- sélectionner une zone rectangulaire du canevas à analyser ; ou
-- analyser le canevas dans son ensemble.
-
-Consultez le résultat affiché par le plugin. Les statistiques décrivent les pixels de la capture analysée ; elles ne mesurent pas directement la consommation électrique réelle de l’ordinateur ou de l’écran.
-
-### 4. Créer un modèle personnalisé
-
-Dans la fenêtre principale, ouvrez la gestion des modèles puis choisissez l’action de création.
-
-Un modèle personnalisé peut notamment contenir :
-- un nom et une technologie d’écran ;
-- une formule par pixel ;
-- des constantes associées à cette formule, sous la forme d’un tableau **Nom / Valeur** ;
-- le type de résultat et, si nécessaire, une formule de sortie ;
-- les paramètres complémentaires proposés par l’éditeur.
-
-Pour ajouter une constante à la formule par pixel, utilisez **Ajouter une constante**, puis renseignez son nom et sa valeur numérique. Utilisez ce nom dans la formule. Par exemple, si la formule fait référence à `gamma`, ajoutez une constante nommée `gamma` avec la valeur souhaitée.
-
-Utilisez **Tester les formules** avant d’enregistrer le modèle. Si le test signale une erreur, vérifiez la syntaxe de la formule, les noms des constantes et leurs valeurs.
-
-Les modèles personnalisés sont enregistrés dans les paramètres utilisateur de QGIS. Ils sont donc liés au profil QGIS utilisé et ne sont pas automatiquement partagés avec les autres testeurs.

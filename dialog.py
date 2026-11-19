@@ -37,6 +37,13 @@ try:
 except AttributeError:
     DIALOG_ACCEPTED = QDialog.DialogCode.Accepted
 
+try:
+    MESSAGEBOX_YES = QMessageBox.Yes
+    MESSAGEBOX_NO = QMessageBox.No
+except AttributeError:
+    MESSAGEBOX_YES = QMessageBox.StandardButton.Yes
+    MESSAGEBOX_NO = QMessageBox.StandardButton.No
+
 def exec_dialog(dialog):
     if hasattr(dialog, "exec"):
         return dialog.exec()
@@ -458,11 +465,11 @@ class ModelManagerDialog(QDialog):
             self,
             self.tr("Delete model"),
             self.tr("Delete model « {} » ?").format(model["name"]),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+            MESSAGEBOX_YES | MESSAGEBOX_NO,
+            MESSAGEBOX_NO,
         )
 
-        if answer != QMessageBox.Yes:
+        if answer != MESSAGEBOX_YES:
             return
 
         try:
